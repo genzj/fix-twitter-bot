@@ -1,21 +1,32 @@
 {
   "name": "fix-twitter-bot",
-  "version": "0.0.0",
+  "version": "0.0.1",
+  "pre-commit": [
+    "types:check",
+    "lint",
+    "test"
+  ],
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
     "test": "jest",
     "types:check": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "start": "wrangler dev"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230419.0",
     "@types/jest": "^29.5.8",
     "@types/node": "^20.9.0",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "eslint": "^8.53.0",
     "jest": "^29.7.0",
     "jest-environment-miniflare": "^2.14.1",
     "miniflare": "^3.20231025.1",
+    "pre-commit": "^1.2.2",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4",
