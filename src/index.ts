@@ -1,3 +1,4 @@
+import { setWebhook } from '@/telegram';
 /**
  * Welcome to Cloudflare Workers! This is your first worker.
  *
@@ -10,25 +11,40 @@
 
 /* eslint-disable-next-line @typescript-eslint/no-empty-interface */
 export interface Env {
-  // Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
-  // MY_KV_NAMESPACE: KVNamespace;
-  //
-  // Example binding to Durable Object. Learn more at https://developers.cloudflare.com/workers/runtime-apis/durable-objects/
-  // MY_DURABLE_OBJECT: DurableObjectNamespace;
-  //
-  // Example binding to R2. Learn more at https://developers.cloudflare.com/workers/runtime-apis/r2/
-  // MY_BUCKET: R2Bucket;
-  //
-  // Example binding to a Service. Learn more at https://developers.cloudflare.com/workers/runtime-apis/service-bindings/
-  // MY_SERVICE: Fetcher;
-  //
-  // Example binding to a Queue. Learn more at https://developers.cloudflare.com/queues/javascript-apis/
-  // MY_QUEUE: Queue;
+	// Get the token from @BotFather https://core.telegram.org/bots#6-botfather
+	BOT_TOKEN: string;
+	// 1-256 characters. Only characters A-Z, a-z, 0-9, _ and - are allowed
+	BOT_SECRET: string;
+
+	WEBHOOK?: string;
 }
 
+const DEFAULT_WEBHOOK_SUFFIX = '/endpoint';
+
+async function registerWebhook(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
+	const requestUrl = new URL(request.url);
+	const webhookUrl = `${requestUrl.protocol}//${requestUrl.hostname}${env.WEBHOOK ?? DEFAULT_WEBHOOK_SUFFIX}`;
+	const r = await setWebhook({
+		token: env.BOT_SECRET,
+		url: webhookUrl,
+		secret_token: env.BOT_SECRET,
+	});
+	return new Response(JSON.stringify(r, null, 2));
+}
 export default {
-  /* eslint-disable-next-line @typescript-eslint/require-await,@typescript-eslint/no-unused-vars */
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    return new Response('Hello World!');
-  },
+	/* eslint-disable-next-line @typescript-eslint/require-await,@typescript-eslint/no-unused-vars */
+	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+		const url = new URL(request.url);
+		switch (url.pathname) {
+			case env.WEBHOOK ?? DEFAULT_WEBHOOK_SUFFIX:
+				// return await handleWebhook(request, env, ctx);
+				break;
+			case '/registerWebhook':
+				return await registerWebhook(request, env, ctx);
+			case '/unregisterWebhook':
+				// return await unregisterWebhook(request, env, ctx);
+				break;
+		}
+		return new Response('Hello World!', { status: 404 });
+	},
 };
